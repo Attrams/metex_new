@@ -7,8 +7,15 @@ defmodule MetexNew.Worker do
     GenServer.start_link(__MODULE__, :ok, opts)
   end
 
-  ## Server Callbacks
+  def get_stats(pid) do
+    GenServer.call(pid, :gen_stats)
+  end
 
+  def reset_stats(pid) do
+    GenServer.cast(pid, :reset_stats)
+  end
+
+  ## Server Callbacks
   def init(:ok) do
     {:ok, %{}}
   end
@@ -19,6 +26,10 @@ defmodule MetexNew.Worker do
   end
 
   ## Server API
+  def handle_call(:gen_stats, _from, stats) do
+    {:reply, stats, stats}
+  end
+
   def handle_call({:location, location}, _from, stats) do
     case temperature_of(location) do
       {:ok, temp} ->
@@ -28,6 +39,10 @@ defmodule MetexNew.Worker do
       _ ->
         {:reply, :error, stats}
     end
+  end
+
+  def handle_cast(:reset_stats, _stats) do
+    {:noreply, %{}}
   end
 
   defp temperature_of(location) do
