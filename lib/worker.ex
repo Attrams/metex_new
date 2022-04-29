@@ -8,11 +8,21 @@ defmodule MetexNew.Worker do
   end
 
   def get_stats(pid) do
-    GenServer.call(pid, :gen_stats)
+    GenServer.call(pid, :get_stats)
   end
 
   def reset_stats(pid) do
     GenServer.cast(pid, :reset_stats)
+  end
+
+  def stop(pid) do
+    GenServer.cast(pid, :stop)
+  end
+
+  def terminate(reason, stats) do
+    IO.puts("server terminated because of #{inspect(reason)}")
+    inspect(stats)
+    :ok
   end
 
   ## Server Callbacks
@@ -26,7 +36,7 @@ defmodule MetexNew.Worker do
   end
 
   ## Server API
-  def handle_call(:gen_stats, _from, stats) do
+  def handle_call(:get_stats, _from, stats) do
     {:reply, stats, stats}
   end
 
@@ -43,6 +53,10 @@ defmodule MetexNew.Worker do
 
   def handle_cast(:reset_stats, _stats) do
     {:noreply, %{}}
+  end
+
+  def handle_cast(:stop, stats) do
+    {:stop, :normal, :ok, stats}
   end
 
   defp temperature_of(location) do
